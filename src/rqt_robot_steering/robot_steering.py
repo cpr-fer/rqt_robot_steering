@@ -38,6 +38,7 @@ from python_qt_binding.QtCore import Qt, QTimer, Slot, QThread, QStringListModel
 from python_qt_binding.QtGui import QKeySequence
 from python_qt_binding.QtWidgets import QShortcut, QWidget, QCompleter
 from rclpy.qos import QoSProfile
+from rclpy.exceptions import InvalidTopicNameException
 from rqt_gui_py.plugin import Plugin
 
 class RobotSteering(Plugin):
@@ -227,13 +228,15 @@ class RobotSteering(Plugin):
             # TODO: Set qlineedits's background color red while this is true?
             return
 
-        if (self._msgtype == "Twist"):
-            self._publisher = self._node.create_publisher(Twist, topic, qos_profile=QoSProfile(depth=10))
-        elif (self._msgtype == "TwistStamped"):
-            self._publisher = self._node.create_publisher(TwistStamped, topic, qos_profile=QoSProfile(depth=10))
-        else:
+        try:
+            if (self._msgtype == "Twist"):
+                self._publisher = self._node.create_publisher(Twist, topic, qos_profile=QoSProfile(depth=10))
+            elif (self._msgtype == "TwistStamped"):
+                self._publisher = self._node.create_publisher(TwistStamped, topic, qos_profile=QoSProfile(depth=10))
+            else:
+                self._publisher = None
+        except InvalidTopicNameException:
             self._publisher = None
-            return
 
     def _on_stop_pressed(self):
         # If the current value of sliders is zero directly send stop twist msg
